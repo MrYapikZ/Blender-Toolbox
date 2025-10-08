@@ -10,6 +10,37 @@ def find_objects_by_key(key=""):
     return [o for o in override_objects if o.get(key)]
 
 
+def get_compositor_tree(scene: bpy.types.Scene):
+    """Return the scene's compositor node tree, or None safely."""
+    if not scene:
+        return None
+    # In Blender 3.x/4.x, the compositor lives on the scene's node_tree
+    tree = getattr(scene, "node_tree", None)
+    return tree if tree and isinstance(tree, bpy.types.NodeTree) else None
+
+
+def find_occlusion_node(scene: bpy.types.Scene):
+    """Return the node named 'Occlusion_Thickness' if it exists."""
+    tree = get_compositor_tree(scene)
+    if not tree:
+        return None
+    return tree.nodes.get("Occlusion_Thickness")
+
+
+def get_thickness_socket(node: bpy.types.Node):
+    """
+    Return Occlusion_Thickness.inputs[0] exactly, or None if missing.
+    """
+    try:
+        # You said this is the canonical path; we'll respect it but still guard it.
+        node_exact = bpy.data.scenes["Scene"].node_tree.nodes.get("Occlusion_Thickness")
+        if node_exact and len(node_exact.inputs) > 0:
+            return node_exact.inputs[0]
+    except Exception:
+        pass
+    return None
+
+
 class LightingPropertiesUI:
     def __init__(self, layout, context):
         self.layout = layout
@@ -20,11 +51,33 @@ class LightingPropertiesUI:
         s = self.context.scene
         props = s.lighting_props
 
+        row_func = layout.row(align=True)
+        row_func.operator("blp.make_override_lights_local", text="Override Light", icon="LIBRARY_DATA_OVERRIDE")
+        # make func to detect bpy.data.scenes["Scene"].node_tree.nodes["Occlusion_Thickness"] exists or not
+
         row = layout.row(align=True)
         row.operator("view3d.refresh_custom_prop_list", text="", icon="FILE_REFRESH")
         eevee = self.context.scene.eevee
         row.prop(eevee, "gtao_distance", text="AO Distance")
-        row.operator("blp.make_override_lights_local", text="Override Light", icon="LIBRARY_DATA_OVERRIDE")
+
+        occ_box = layout.box()
+
+        node = find_occlusion_node(s)
+        if not node:
+            occ_box.label(text="Compositor node 'Occlusion_Thickness' not found.", icon='ERROR')
+        else:
+            sock = get_thickness_socket(node)
+            if not sock:
+                occ_box.label(text="No suitable input socket on 'Occlusion_Thickness'.", icon='ERROR')
+            else:
+                # If linked, editing default_value won't affect output — still show for visibility
+                if getattr(sock, "is_linked", False):
+                    sub = occ_box.row(align=True)
+                    sub.enabled = False
+                    sub.prop(sock, "default_value", text="AO Thickness")
+                    occ_box.label(text="Input is linked; driven upstream.", icon='DECORATE_LINKED')
+                else:
+                    row.prop(sock, "default_value", text="AO Thickness")
 
         key = props.key
         objs = sorted(find_objects_by_key(key), key=lambda o: o.name.lower())
