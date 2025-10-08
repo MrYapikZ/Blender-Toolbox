@@ -35,7 +35,7 @@ class LightingPropertiesUI:
         else:
             for o in objs:
                 box = layout.box()
-                box.label(text=f"{o.name}", icon='OBJECT_DATA')
+                box.label(text=f"{o.get(key)}", icon='LIGHT_DATA')
 
                 # If it's a light, show its energy slider
                 if o.type == 'LIGHT':
