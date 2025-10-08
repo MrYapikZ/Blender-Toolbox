@@ -24,6 +24,7 @@ class LightingPropertiesUI:
         row.operator("view3d.refresh_custom_prop_list", text="", icon="FILE_REFRESH")
         eevee = self.context.scene.eevee
         row.prop(eevee, "gtao_distance", text="AO Distance")
+        row.operator("blp.make_override_lights_local", text="Override Light", icon="LIBRARY_DATA_OVERRIDE")
 
         key = props.key
         objs = sorted(find_objects_by_key(key), key=lambda o: o.name.lower())
