@@ -110,6 +110,14 @@ class LightingPropertiesUI:
         else:
             layout.template_color_ramp(mist_intensity_node, "color_ramp", expand=True)
 
+        col_defocus_zscale = layout.column(align=True)
+        col_defocus_zscale.label(text="Defocus Z-Scale:")
+        defocus_zscale_node = find_custom_node(s, "Defocus")
+        if not defocus_zscale_node:
+            occ_box.label(text="Compositor node 'Defocus' not found.", icon='ERROR')
+        else:
+            col_defocus_zscale.prop(defocus_zscale_node, "z_scale", text="Z-Scale")
+
         key = props.key
         objs = sorted(find_objects_by_key(key), key=lambda o: o.name.lower())
 
