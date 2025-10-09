@@ -4,9 +4,8 @@ import bpy
 # ------------------------------------------------------------------------
 # Helpers
 # ------------------------------------------------------------------------
-def find_objects_by_key(key=""):
-    override_objects = [obj for obj in bpy.data.objects if obj.override_library]
-    return [o for o in override_objects if o.get(key)]
+def find_objects_by_key(key):
+    return [obj for obj in bpy.data.objects if key in obj.keys()]
 
 
 def get_compositor_tree(scene: bpy.types.Scene):
@@ -122,6 +121,23 @@ class LightingPropertiesUI:
                     box.prop(o.data, "energy", text="Energy")
                     box.prop(o.data, "exposure", text="Exposure")
                     box.prop(o.data, "shadow_jitter_overblur", text="Shadow Jitter")
+                elif o.type == 'EMPTY':
+                    name_l = o.get(key).lower()
+
+                    if name_l.startswith("light_aim"):
+                        # Z position: location is a Vector property; use index=2 for Z
+                        box.prop(o, "location", index=2, text="Aim Z Location")
+
+                    elif name_l.startswith("light_root"):
+                        # Z rotation: show Euler Z. (Works even if current mode is quaternion—Blender will use Euler here.)
+                        # Optional: remind current mode
+                        if o.rotation_mode not in {'XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX'}:
+                            box.label(text=f"Rotation mode: {o.rotation_mode}", icon='INFO')
+
+                        box.prop(o, "rotation_euler", index=2, text="Root Z Rotation")
+
+                    else:
+                        box.label(text="Empty (not light_aim/root)")
                 else:
                     box.label(text="Not a Light object.", icon='ERROR')
                     box.label(text="Energy control is only available for lights.")
