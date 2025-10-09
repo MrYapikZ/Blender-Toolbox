@@ -162,6 +162,7 @@ class LightingPropertiesUI:
                             if o.rotation_mode not in {'XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX'}:
                                 row.label(text=f"Rotation mode: {o.rotation_mode}", icon='INFO')
                             row.prop(o, "rotation_euler", index=2, text="Root Z Rotation")
+                            row.prop(o, '["light_diameter"]', text="Light Diameter")
 
                         else:
                             row.label(text="Empty (not light_aim/root)")
