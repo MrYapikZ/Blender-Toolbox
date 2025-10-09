@@ -1,4 +1,5 @@
 import bpy
+from collections import defaultdict
 
 
 # ------------------------------------------------------------------------
@@ -37,6 +38,12 @@ def get_thickness_socket(node: bpy.types.Node):
     except Exception:
         pass
     return None
+
+
+def _suffix_of(s: str) -> str:
+    if not s:
+        return ""
+    return s.rsplit('_', 1)[-1]  # after last underscore
 
 
 # ------------------------------------------------------------------------
@@ -111,33 +118,53 @@ class LightingPropertiesUI:
         if not objs:
             col.label(text="No objects with that key.", icon='INFO')
         else:
+            # 1) bucket objects by suffix
+            buckets = defaultdict(list)
             for o in objs:
+                value = o.get(key)
+                buckets[_suffix_of(value)].append(o)
+
+            # 2) deterministically order the suffixes (optional but nice)
+            for suffix in sorted(buckets.keys()):
+                items = buckets[suffix]
+
+                # One box per suffix
                 box = layout.box()
-                box.label(text=f"{o.get(key)}", icon='LIGHT_DATA')
+                box.label(text=f"Group: {suffix}", icon='LIGHT_DATA')
 
-                # If it's a light, show its energy slider
-                if o.type == 'LIGHT':
-                    box.prop(o.data, "color", text="Color")
-                    box.prop(o.data, "energy", text="Energy")
-                    box.prop(o.data, "exposure", text="Exposure")
-                    box.prop(o.data, "shadow_jitter_overblur", text="Shadow Jitter")
-                elif o.type == 'EMPTY':
-                    name_l = o.get(key).lower()
+                # A column to stack per-object controls
+                col = box.column(align=True)
 
-                    if name_l.startswith("light_aim"):
-                        # Z position: location is a Vector property; use index=2 for Z
-                        box.prop(o, "location", index=2, text="Aim Z Location")
+                for o in items:
+                    value = o.get(key) or "(unnamed)"
+                    name_l = value.lower()
 
-                    elif name_l.startswith("light_root"):
-                        # Z rotation: show Euler Z. (Works even if current mode is quaternion—Blender will use Euler here.)
-                        # Optional: remind current mode
-                        if o.rotation_mode not in {'XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX'}:
-                            box.label(text=f"Rotation mode: {o.rotation_mode}", icon='INFO')
+                    row = col.box()  # small sub-box per object for clarity
+                    row.label(text=value, icon='LIGHT_DATA' if o.type == 'LIGHT' else 'EMPTY_DATA')
 
-                        box.prop(o, "rotation_euler", index=2, text="Root Z Rotation")
+                    if o.type == 'LIGHT':
+                        row.prop(o.data, "color", text="Color")
+                        row.prop(o.data, "energy", text="Energy")
+                        # Guard missing props in case render engine doesn't expose them
+                        if hasattr(o.data, "exposure"):
+                            row.prop(o.data, "exposure", text="Exposure")
+                        if hasattr(o.data, "shadow_jitter_overblur"):
+                            row.prop(o.data, "shadow_jitter_overblur", text="Shadow Jitter")
 
+                    elif o.type == 'EMPTY':
+                        # Aim/root helpers live here
+                        if name_l.startswith("light_aim"):
+                            # Z location only
+                            row.prop(o, "location", index=2, text="Aim Z Location")
+
+                        elif name_l.startswith("light_root"):
+                            # Show rotation mode hint if not Euler
+                            if o.rotation_mode not in {'XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX'}:
+                                row.label(text=f"Rotation mode: {o.rotation_mode}", icon='INFO')
+                            row.prop(o, "rotation_euler", index=2, text="Root Z Rotation")
+
+                        else:
+                            row.label(text="Empty (not light_aim/root)")
                     else:
-                        box.label(text="Empty (not light_aim/root)")
-                else:
-                    box.label(text="Not a Light object.", icon='ERROR')
-                    box.label(text="Energy control is only available for lights.")
+                        row.label(text="Not a Light object.", icon='ERROR')
+                        row.label(text="Energy control is only available for lights.")
