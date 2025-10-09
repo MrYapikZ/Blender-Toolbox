@@ -71,22 +71,15 @@ class LightingPropertiesUI:
         eevee = self.context.scene.eevee
         row_ao.prop(eevee, "gtao_distance", text="AO Distance")
 
+        col_ao_thic = layout.column(align=True)
+        col_ao_thic.label(text="AO Thickness Ramp:")
+
         ao_thic_node = find_custom_node(s, "Occlusion_Thickness")
         if not ao_thic_node:
             occ_box.label(text="Compositor node 'Occlusion_Thickness' not found.", icon='ERROR')
         else:
-            sock = get_thickness_socket(ao_thic_node)
-            if not sock:
-                occ_box.label(text="No suitable input socket on 'Occlusion_Thickness'.", icon='ERROR')
-            else:
-                # If linked, editing default_value won't affect output — still show for visibility
-                if getattr(sock, "is_linked", False):
-                    sub = occ_box.row(align=True)
-                    sub.enabled = False
-                    sub.prop(sock, "default_value", text="AO Thickness")
-                    occ_box.label(text="Input is linked; driven upstream.", icon='DECORATE_LINKED')
-                else:
-                    row_ao.prop(sock, "default_value", text="AO Thickness")
+            layout.template_color_ramp(ao_thic_node, "color_ramp", expand=True)
+
         col_mist_range = layout.column(align=True)
         col_mist_range.label(text="Mist Range:")
         row_mist_range_1 = layout.row(align=True)
