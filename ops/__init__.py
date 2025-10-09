@@ -1,9 +1,16 @@
-from . import LightingProperties
+from . import LightingProperties, LightingSetup
+
+modules = [
+    LightingProperties,
+    LightingSetup,
+]
 
 
 def register():
-    LightingProperties.register()
+    for item in modules:
+        item.register()
 
 
 def unregister():
-    LightingProperties.unregister()
+    for item in modules:
+        item.unregister()

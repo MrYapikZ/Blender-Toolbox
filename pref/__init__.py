@@ -1,8 +1,9 @@
-from . import master, lighting_properties
+from . import master, lighting_properties, lighting_setup
 
 modules = [
     master,
     lighting_properties,
+    lighting_setup,
 ]
 
 

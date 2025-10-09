@@ -2,9 +2,8 @@ import bpy
 
 
 # ------------------------------------------------------------------------
-# Navigation Panel Properties
+# Helpers
 # ------------------------------------------------------------------------
-
 def find_objects_by_key(key=""):
     override_objects = [obj for obj in bpy.data.objects if obj.override_library]
     return [o for o in override_objects if o.get(key)]
@@ -41,6 +40,9 @@ def get_thickness_socket(node: bpy.types.Node):
     return None
 
 
+# ------------------------------------------------------------------------
+# Navigation Panel Properties
+# ------------------------------------------------------------------------
 class LightingPropertiesUI:
     def __init__(self, layout, context):
         self.layout = layout

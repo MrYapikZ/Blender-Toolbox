@@ -9,10 +9,11 @@ class Toolbox(bpy.types.PropertyGroup):
         name="Mode",
         description="Choose which tool page to display",
         items=[
-            ('TOOLS', "Tools", "General utilities, version and shortcuts"),
-            ('LIGHTING', "LightingProperties", "Lighting override controls"),
+            ('INFO', "Info", "Information about the addon"),
+            ('LIGHTING_PROPERTIES', "LightingProperties", "Lighting override controls"),
+            ('LIGHTING_SETUP', "LightingSetup", "Lighting setup tools"),
         ],
-        default='TOOLS',
+        default='INFO',
     )
     version: bpy.props.StringProperty(
         name="Version",

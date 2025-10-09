@@ -1,6 +1,7 @@
 import bpy
 
 from .LightingProperties import LightingPropertiesUI
+from .LightingSetup import LightingSetupUI
 
 
 # ------------------------------------------------------------------------
@@ -24,13 +25,16 @@ class NAV_PT_Panel(bpy.types.Panel):
 
         layout.separator(factor=0.3)
 
-        if s.toolbox.ui_mode == 'TOOLS':
+        if s.toolbox.ui_mode == 'INFO':
             # Header: version + quick info
             box = layout.box()
             row = box.row(align=True)
             row.label(text=f"Toolkit v{s.toolbox.version}", icon='INFO')
-        elif s.toolbox.ui_mode == 'LIGHTING':
+            row.label(text="Maintainer: MrYapikZ")
+        elif s.toolbox.ui_mode == 'LIGHTING_PROPERTIES':
             LightingPropertiesUI(self.layout, context).draw()
+        elif s.toolbox.ui_mode == 'LIGHTING_SETUP':
+            LightingSetupUI(self.layout, context).draw()
 
 
 # ------------------------------------------------------------------------
