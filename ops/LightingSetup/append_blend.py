@@ -1,4 +1,4 @@
-import bpy
+import bpy, re
 from ...utils.file_manager import FileManager
 
 
@@ -14,17 +14,65 @@ def ensure_root_child(parent_coll: bpy.types.Collection, child_coll: bpy.types.C
     parent_coll.children.link(child_coll)
 
 
-def unique_collection_name(base: str) -> str:
-    """Return a name that's not used by any existing collection."""
+def unique_collection_name(base: str, reporter=None) -> str | None:
+    """
+    Return base if it's available.
+    If a collection with that name already exists, return None and optionally warn.
+    """
     if bpy.data.collections.get(base) is None:
         return base
-    i = 0o01
+
+    # base name already taken → stop and warn
+    if reporter:
+        reporter({'WARNING'}, f"Collection '{base}' already exists. Aborting to avoid conflict.")
+    return None
+
+def object_name_with_suffix(name: str, suffix: str) -> str:
+    """
+    Insert _<suffix> before any numeric .### tail.
+    If already suffixed with _<suffix>, return unchanged.
+    """
+    wanted_tail = f"_{suffix}"
+    if name.endswith(wanted_tail) or re.search(rf"_{re.escape(suffix)}\.\d{{3}}$", name):
+        return name  # already has suffix (with or without numeric tail)
+
+    m = re.match(r"^(.*?)(\.\d{3})$", name)
+    if m:
+        core, num = m.groups()
+        return f"{core}{wanted_tail}{num}"
+    return f"{name}{wanted_tail}"
+
+def unique_object_name(desired: str) -> str:
+    """Ensure object name is unique across bpy.data.objects."""
+    if bpy.data.objects.get(desired) is None:
+        return desired
+    i = 1
     while True:
-        cand = f"{base}.{i:03d}"
-        if bpy.data.collections.get(cand) is None:
+        cand = f"{desired}.{i:03d}"
+        if bpy.data.objects.get(cand) is None:
             return cand
         i += 1
 
+def add_suffix_to_objects_in_collection(coll: bpy.types.Collection, suffix: str) -> int:
+    """
+    Rename all objects inside `coll` (recursively) by appending _<suffix>.
+    Returns the count of objects renamed.
+    """
+    renamed = 0
+    # coll.all_objects includes objects from nested child collections
+    objs = getattr(coll, "all_objects", coll.objects)
+    for obj in objs:
+        old = obj.name
+        wanted = object_name_with_suffix(old, suffix)
+        if wanted != old:
+            new_name = unique_object_name(wanted)
+            try:
+                obj.name = new_name
+                renamed += 1
+            except Exception:
+                # Silently skip if renaming is blocked by some operator context
+                pass
+    return renamed
 
 # ------------------------------------------------------------------------
 # Lighting Setup - Append Blend File
@@ -79,7 +127,7 @@ class LIGHTINGSETUP_OT_AppendBlend(bpy.types.Operator):
             self.report({'ERROR'}, f"Failed to load library: {e}")
             return {'CANCELLED'}
 
-        # Rename appended collections to 'rm-' and link under RIMFILL
+        # Rename appended collections to 'rf-' and link under RIMFILL
         renamed_any = False
         for coll in getattr(data_to, "collections", []):
             if coll is None:
@@ -87,13 +135,20 @@ class LIGHTINGSETUP_OT_AppendBlend(bpy.types.Operator):
             # Link under RIMFILL (not the scene root)
             ensure_root_child(rimfill, coll)
 
-            # Rename safely
-            target_name = unique_collection_name(f"rm-{suffix}")
+            # Rename collection to 'rf-<suffix>'
+            target_name = unique_collection_name(f"rf-{suffix}")
             try:
                 coll.name = target_name
                 renamed_any = True
             except Exception as e:
                 self.report({'WARNING'}, f"Could not rename appended collection: {e}")
+
+            # Rename all objects inside the collection to include _<suffix>
+            renamed_count = add_suffix_to_objects_in_collection(coll, suffix)
+            if renamed_count:
+                self.report({'INFO'}, f"Renamed {renamed_count} object(s) to include _{suffix}.")
+            else:
+                self.report({'INFO'}, f"No object names needed _{suffix} (already suffixed or none found).")
 
         if not renamed_any:
             self.report({'WARNING'}, "Lighting setup appended but renaming may have failed.")
