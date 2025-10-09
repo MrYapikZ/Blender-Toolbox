@@ -18,12 +18,12 @@ def get_compositor_tree(scene: bpy.types.Scene):
     return tree if tree and isinstance(tree, bpy.types.NodeTree) else None
 
 
-def find_occlusion_node(scene: bpy.types.Scene):
-    """Return the node named 'Occlusion_Thickness' if it exists."""
+def find_custom_node(scene: bpy.types.Scene, node_name):
+    """Return the node with named if it exists."""
     tree = get_compositor_tree(scene)
     if not tree:
         return None
-    return tree.nodes.get("Occlusion_Thickness")
+    return tree.nodes.get(node_name)
 
 
 def get_thickness_socket(node: bpy.types.Node):
@@ -53,22 +53,23 @@ class LightingPropertiesUI:
         s = self.context.scene
         props = s.lighting_props
 
+        occ_box = layout.box()
+
         row_func = layout.row(align=True)
         row_func.operator("blp.make_override_lights_local", text="Override Light", icon="LIBRARY_DATA_OVERRIDE")
         # make func to detect bpy.data.scenes["Scene"].node_tree.nodes["Occlusion_Thickness"] exists or not
 
-        row = layout.row(align=True)
-        row.operator("view3d.refresh_custom_prop_list", text="", icon="FILE_REFRESH")
+        col_ao = layout.column(align=True)
+        col_ao.label(text="Ambient Occlusion Settings:")
+        row_ao = layout.row(align=True)
         eevee = self.context.scene.eevee
-        row.prop(eevee, "gtao_distance", text="AO Distance")
+        row_ao.prop(eevee, "gtao_distance", text="AO Distance")
 
-        occ_box = layout.box()
-
-        node = find_occlusion_node(s)
-        if not node:
+        ao_thic_node = find_custom_node(s, "Occlusion_Thickness")
+        if not ao_thic_node:
             occ_box.label(text="Compositor node 'Occlusion_Thickness' not found.", icon='ERROR')
         else:
-            sock = get_thickness_socket(node)
+            sock = get_thickness_socket(ao_thic_node)
             if not sock:
                 occ_box.label(text="No suitable input socket on 'Occlusion_Thickness'.", icon='ERROR')
             else:
@@ -79,7 +80,29 @@ class LightingPropertiesUI:
                     sub.prop(sock, "default_value", text="AO Thickness")
                     occ_box.label(text="Input is linked; driven upstream.", icon='DECORATE_LINKED')
                 else:
-                    row.prop(sock, "default_value", text="AO Thickness")
+                    row_ao.prop(sock, "default_value", text="AO Thickness")
+        col_mist_range = layout.column(align=True)
+        col_mist_range.label(text="Mist Range:")
+        row_mist_range_1 = layout.row(align=True)
+        row_mist_range_2 = layout.row(align=True)
+
+        mist_range_node = find_custom_node(s, "Mist_Range")
+        if not mist_range_node:
+            occ_box.label(text="Compositor node 'Mist_Range' not found.", icon='ERROR')
+        else:
+            row_mist_range_1.prop(mist_range_node.inputs[1], "default_value", text="From Min")
+            row_mist_range_1.prop(mist_range_node.inputs[2], "default_value", text="From Max")
+            row_mist_range_2.prop(mist_range_node.inputs[3], "default_value", text="To Min")
+            row_mist_range_2.prop(mist_range_node.inputs[4], "default_value", text="To Max")
+
+        col_mist_intensity = layout.column(align=True)
+        col_mist_intensity.label(text="Mist Intensity Ramp:")
+
+        mist_intensity_node = find_custom_node(s, "Mist_Intensity")
+        if not mist_intensity_node:
+            occ_box.label(text="Compositor node 'Mist_Intensity' not found.", icon='ERROR')
+        else:
+            layout.template_color_ramp(mist_intensity_node, "color_ramp", expand=True)
 
         key = props.key
         objs = sorted(find_objects_by_key(key), key=lambda o: o.name.lower())

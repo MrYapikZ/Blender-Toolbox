@@ -28,9 +28,9 @@ class NAV_PT_Panel(bpy.types.Panel):
         if s.toolbox.ui_mode == 'INFO':
             # Header: version + quick info
             box = layout.box()
-            row = box.row(align=True)
-            row.label(text=f"Toolkit v{s.toolbox.version}", icon='INFO')
-            row.label(text="Maintainer: MrYapikZ")
+            col = box.column(align=True)
+            col.label(text=f"Toolkit v{s.toolbox.version}", icon='INFO')
+            col.label(text="Maintainer: MrYapikZ")
         elif s.toolbox.ui_mode == 'LIGHTING_PROPERTIES':
             LightingPropertiesUI(self.layout, context).draw()
         elif s.toolbox.ui_mode == 'LIGHTING_SETUP':
