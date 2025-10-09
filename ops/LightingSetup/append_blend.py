@@ -60,7 +60,7 @@ def unique_object_name(desired: str, reporter=None) -> str:
     return None
 
 
-def add_suffix_to_objects_in_collection(coll: bpy.types.Collection, suffix: str) -> int:
+def add_suffix_to_objects_in_collection(coll: bpy.types.Collection, suffix: str, key) -> int:
     """
     Rename all objects inside `coll` (recursively) by appending _<suffix>.
     Returns the count of objects renamed.
@@ -75,6 +75,7 @@ def add_suffix_to_objects_in_collection(coll: bpy.types.Collection, suffix: str)
             new_name = unique_object_name(wanted)
             try:
                 obj.name = new_name
+                obj[key] = obj.name
                 renamed += 1
             except Exception:
                 # Silently skip if renaming is blocked by some operator context
@@ -198,6 +199,7 @@ class LIGHTINGSETUP_OT_AppendBlend(bpy.types.Operator):
         s = context.scene
         props = s.lighting_setup
         raw_path = props.filepath
+        properties_props = s.lighting_props
         filepath = FileManager.get_filepath(raw_path)
         if not filepath:
             self.report({'ERROR'}, "No presets file path specified")
@@ -273,7 +275,7 @@ class LIGHTINGSETUP_OT_AppendBlend(bpy.types.Operator):
                 self.report({'WARNING'}, f"Could not rename appended collection: {e}")
 
             # Rename all objects inside the collection to include _<suffix>
-            renamed_count = add_suffix_to_objects_in_collection(coll, suffix)
+            renamed_count = add_suffix_to_objects_in_collection(coll, suffix, properties_props.key)
             if renamed_count:
                 self.report({'INFO'}, f"Renamed {renamed_count} object(s) to include _{suffix}.")
 
