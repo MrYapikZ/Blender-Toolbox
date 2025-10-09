@@ -1,4 +1,4 @@
-import bpy, re
+import bpy, re, mathutils
 from ...utils.file_manager import FileManager
 
 
@@ -151,7 +151,7 @@ def find_light_root_candidate(coll: bpy.types.Collection, suffix: str):
 
 def ensure_child_of_to_c_traj(root_obj: bpy.types.Object, rig: bpy.types.Object, reporter=None) -> bool:
     """
-    Adds Child Of to root_obj targeting rig's 'c_traj' bone and sets inverse to keep current world transform.
+    Adds Child Of to root_obj targeting rig's 'c_traj' bone and clear inverse to keep current world transform.
     Returns True on success.
     """
     if rig is None or rig.type != 'ARMATURE':
@@ -174,13 +174,8 @@ def ensure_child_of_to_c_traj(root_obj: bpy.types.Object, rig: bpy.types.Object,
         con.target = rig
         con.subtarget = "c_traj"
 
-    # Try to compute an inverse that preserves current world matrix
-    try:
-        parent_world = rig.matrix_world @ pb.matrix  # pose bone world matrix
-        con.inverse_matrix = parent_world.inverted() @ root_obj.matrix_world
-    except Exception:
-        # Worst case, leave the default inverse; user can set inverse later.
-        pass
+    # Try to clear inverse that preserves current world matrix
+    con.inverse_matrix = mathutils.Matrix.Identity(4)
 
     # Enable all influence channels
     con.influence = 1.0
