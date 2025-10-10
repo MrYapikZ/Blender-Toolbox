@@ -61,49 +61,64 @@ class LightingPropertiesUI:
 
         occ_box = layout.box()
 
-        row_func = layout.row(align=True)
-        row_func.operator("blp.make_override_lights_local", text="Override Light", icon="LIBRARY_DATA_OVERRIDE")
+        # row_func = layout.row(align=True)
+        # row_func.operator("blp.make_override_lights_local", text="Override Light", icon="LIBRARY_DATA_OVERRIDE")
         # make func to detect bpy.data.scenes["Scene"].node_tree.nodes["Occlusion_Thickness"] exists or not
 
-        col_ao = layout.column(align=True)
-        col_ao.label(text="Ambient Occlusion Settings:")
-        row_ao = layout.row(align=True)
+        ## Ambient Occlusion
+        box_ao = layout.box()
+        col_ao = box_ao.column(align=True)
+        col_ao.label(text="AO Distance:")
+        row_ao = box_ao.row(align=True)
         eevee = self.context.scene.eevee
         row_ao.prop(eevee, "gtao_distance", text="AO Distance")
 
-        col_ao_thic = layout.column(align=True)
+        col_ao_thic = box_ao.column(align=True)
         col_ao_thic.label(text="AO Thickness Ramp:")
 
         ao_thic_node = find_custom_node(s, "Occlusion_Thickness")
         if not ao_thic_node:
             occ_box.label(text="Compositor node 'Occlusion_Thickness' not found.", icon='ERROR')
         else:
-            layout.template_color_ramp(ao_thic_node, "color_ramp", expand=True)
+            box_ao.template_color_ramp(ao_thic_node, "color_ramp", expand=True)
 
-        col_mist_range = layout.column(align=True)
-        col_mist_range.label(text="Mist Range:")
-        row_mist_range_1 = layout.row(align=True)
-        row_mist_range_2 = layout.row(align=True)
+        # Mist
+        box_mist = layout.box()
+        col_mist_controller = box_mist.column(align=True)
+        col_mist_controller.label(text="Mist Controller Ramp:")
 
-        mist_range_node = find_custom_node(s, "Mist_Range")
-        if not mist_range_node:
-            occ_box.label(text="Compositor node 'Mist_Range' not found.", icon='ERROR')
+        mist_controller_node = find_custom_node(s, "Mist_Controller")
+        if not mist_controller_node:
+            occ_box.label(text="Compositor node 'Mist_Controller' not found.", icon='ERROR')
         else:
-            row_mist_range_1.prop(mist_range_node.inputs[1], "default_value", text="From Min")
-            row_mist_range_1.prop(mist_range_node.inputs[2], "default_value", text="From Max")
-            row_mist_range_2.prop(mist_range_node.inputs[3], "default_value", text="To Min")
-            row_mist_range_2.prop(mist_range_node.inputs[4], "default_value", text="To Max")
+            box_mist.template_color_ramp(mist_controller_node, "color_ramp", expand=True)
 
-        col_mist_intensity = layout.column(align=True)
-        col_mist_intensity.label(text="Mist Intensity Ramp:")
+        # Depth of Field
+        box_dof = layout.box()
+        col_dof_range = box_dof.column(align=True)
+        col_dof_range.label(text="DOF Range:")
+        row_dof_range_1 = box_dof.row(align=True)
+        row_dof_range_2 = box_dof.row(align=True)
 
-        mist_intensity_node = find_custom_node(s, "Mist_Intensity")
-        if not mist_intensity_node:
-            occ_box.label(text="Compositor node 'Mist_Intensity' not found.", icon='ERROR')
+        dof_range_node = find_custom_node(s, "Dof_Range")
+        if not dof_range_node:
+            occ_box.label(text="Compositor node 'Dof_Range' not found.", icon='ERROR')
         else:
-            layout.template_color_ramp(mist_intensity_node, "color_ramp", expand=True)
+            row_dof_range_1.prop(dof_range_node.inputs[1], "default_value", text="From Min")
+            row_dof_range_1.prop(dof_range_node.inputs[2], "default_value", text="From Max")
+            row_dof_range_2.prop(dof_range_node.inputs[3], "default_value", text="To Min")
+            row_dof_range_2.prop(dof_range_node.inputs[4], "default_value", text="To Max")
 
-        col_defocus_zscale = layout.column(align=True)
+        col_dof_intensity = box_dof.column(align=True)
+        col_dof_intensity.label(text="DOF Intensity Ramp:")
+
+        dof_intensity_node = find_custom_node(s, "Dof_Intensity")
+        if not dof_intensity_node:
+            occ_box.label(text="Compositor node 'Dof_Intensity' not found.", icon='ERROR')
+        else:
+            box_dof.template_color_ramp(dof_intensity_node, "color_ramp", expand=True)
+
+        col_defocus_zscale = box_dof.column(align=True)
         col_defocus_zscale.label(text="Defocus Z-Scale:")
         defocus_zscale_node = find_custom_node(s, "Defocus")
         if not defocus_zscale_node:
@@ -111,6 +126,7 @@ class LightingPropertiesUI:
         else:
             col_defocus_zscale.prop(defocus_zscale_node, "z_scale", text="Z-Scale")
 
+        # Light Properties
         key = props.key
         objs = sorted(find_objects_by_key(key), key=lambda o: o.name.lower())
 
