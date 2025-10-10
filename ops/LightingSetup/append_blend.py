@@ -186,6 +186,47 @@ def ensure_child_of_to_c_traj(root_obj: bpy.types.Object, rig: bpy.types.Object,
     return True
 
 
+def find_named_light(coll: bpy.types.Collection, base: str, suffix: str):
+    exact = f"{base}_{suffix}"
+    for o in all_objects_in_collection(coll):
+        if o.type == 'LIGHT' and o.name == exact:
+            return o
+    # fallback: unique prefix match
+    cands = [o for o in all_objects_in_collection(coll)
+             if o.type == 'LIGHT' and o.name.lower().startswith(base.lower())]
+    return cands[0] if len(cands) == 1 else None
+
+def ensure_shared_receiver_collection(rcv_name: str) -> bpy.types.Collection:
+    """
+    Create or reuse a single receiver collection for light linking.
+    It will be assigned to lights, but unlinked from all scene parents after setup.
+    Returns the collection.
+    """
+    # Create or reuse receiver
+    rcv = bpy.data.collections.get(rcv_name) or bpy.data.collections.new(rcv_name)
+    return rcv
+
+def assign_receiver_collection_to_light(light: bpy.types.Object, rcv: bpy.types.Collection) -> bool:
+    """
+    Assign the given receiver collection to the light (UI: Object Properties > Shading > Light Linking).
+    """
+    if not hasattr(light, "light_linking"):
+        return False
+    try:
+        light.light_linking.receiver_collection = rcv
+        return True
+    except Exception:
+        return False
+
+def add_active_collection_to_receiver(rcv: bpy.types.Collection, active_coll: bpy.types.Collection) -> bool:
+    """
+    Add the active collection as a child of the shared receiver collection (no flags, just like the UI).
+    """
+    if active_coll.name not in rcv.children.keys():
+        rcv.children.link(active_coll)
+        return True
+    return False
+
 # ------------------------------------------------------------------------
 # Lighting Setup - Append Blend File
 # ------------------------------------------------------------------------
@@ -294,6 +335,41 @@ class LIGHTINGSETUP_OT_AppendBlend(bpy.types.Operator):
                                     f"No root light found in '{coll.name}'. Expected 'light_root_{suffix}'.")
                     if not rig:
                         self.report({'WARNING'}, f"No rig detected under active collection '{sel_name}'.")
+
+                ## Set up light linking for fill and rim lights
+                fill_light = find_named_light(coll, "l-fill", suffix)
+                rim_light = find_named_light(coll, "l-rim", suffix)
+
+                # One shared receiver collection name, e.g. ties to the suffix or rf-collection name
+                shared_rcv = ensure_shared_receiver_collection(f"LL_{suffix}")  # or f"LL_rf-{suffix}" if you prefer
+                if not shared_rcv:
+                    self.report({'WARNING'}, "Light Linking API not available; skipped receiver collection setup.")
+                else:
+                    # Assign both lights to the SAME receiver collection
+                    ok_fill = False
+                    ok_rim = False
+
+                    if fill_light:
+                        ok_fill = assign_receiver_collection_to_light(fill_light, shared_rcv)
+                        if ok_fill:
+                            self.report({'INFO'}, f"'{fill_light.name}' uses shared receiver '{shared_rcv.name}'.")
+                        else:
+                            self.report({'WARNING'}, f"Failed to assign receiver to '{fill_light.name}'.")
+
+                    if rim_light:
+                        ok_rim = assign_receiver_collection_to_light(rim_light, shared_rcv)
+                        if ok_rim:
+                            self.report({'INFO'}, f"'{rim_light.name}' uses shared receiver '{shared_rcv.name}'.")
+                        else:
+                            self.report({'WARNING'}, f"Failed to assign receiver to '{rim_light.name}'.")
+
+                    # Add the active collection once to the shared receiver
+                    if add_active_collection_to_receiver(shared_rcv, active_coll):
+                        self.report({'INFO'}, f"Added '{sel_name}' to shared receiver '{shared_rcv.name}'.")
+                    else:
+                        self.report({'INFO'}, f"'{sel_name}' already present in shared receiver '{shared_rcv.name}'.")
+
+
             else:
                 self.report({'INFO'}, f"No object names needed _{suffix} (already suffixed or none found).")
 
