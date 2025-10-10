@@ -238,7 +238,7 @@ class LIGHTINGSETUP_OT_AppendBlend(bpy.types.Operator):
         else:
             self.report({'WARNING'},
                         f"Active collection '{sel_name}' doesn't start with 'c-'. Continuing and keeping name.")
-            suffix = sel_name
+            return {'CANCELLED'}
 
         ## Ensure 'RIMFILL' collection exists
         rimfill = bpy.data.collections.get("RIMFILL")
