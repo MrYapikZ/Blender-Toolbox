@@ -1,5 +1,6 @@
 import bpy, re, mathutils
 from ...utils.file_manager import FileManager
+from .set_child_of_bone_popup import CUSTOM_BONE_NAME
 
 
 # ------------------------------------------------------------------------
@@ -159,21 +160,35 @@ def ensure_child_of_to_c_traj(root_obj: bpy.types.Object, rig: bpy.types.Object,
         if reporter: reporter({'WARNING'}, "No valid rig (Armature) to constrain to.")
         return False
 
-    pb = rig.pose.bones.get("c_traj") if rig.pose else None
+    # Find the bone to target: prefer 'c_traj', fallback to 'body'
+    pb = None
+    if rig.pose:
+        pb = rig.pose.bones.get("c_traj") or rig.pose.bones.get("body")
+
     if pb is None:
-        if reporter: reporter({'WARNING'}, "Rig has no pose bone named 'c_traj'.")
-        return False
+        bpy.ops.bls.set_child_of_bone_popup('INVOKE_DEFAULT', rig_obj=rig)
+        if reporter:
+            reporter({'INFO'}, "Please pick a bone to use for Child Of constraint.")
+        pb = rig.pose.bones.get(CUSTOM_BONE_NAME)
+        if pb is None:
+            if reporter:
+                reporter({'WARNING'}, f"Rig has no pose bone named '{CUSTOM_BONE_NAME}'.")
+            return False
+        else:
+            if reporter:
+                reporter({'WARNING'}, "Rig has neither 'c_traj' nor 'body' pose bone.")
+            return False
 
     # Reuse existing matching constraint if any
     con = None
     for c in root_obj.constraints:
-        if c.type == 'CHILD_OF' and c.target == rig and c.subtarget == "c_traj":
+        if c.type == 'CHILD_OF' and c.target == rig and c.subtarget == pb.name:
             con = c
             break
     if con is None:
         con = root_obj.constraints.new(type='CHILD_OF')
         con.target = rig
-        con.subtarget = "c_traj"
+        con.subtarget = pb.name
 
     # Try to clear inverse that preserves current world matrix
     con.inverse_matrix = mathutils.Matrix.Identity(4)
@@ -196,6 +211,7 @@ def find_named_light(coll: bpy.types.Collection, base: str, suffix: str):
              if o.type == 'LIGHT' and o.name.lower().startswith(base.lower())]
     return cands[0] if len(cands) == 1 else None
 
+
 def ensure_shared_receiver_collection(rcv_name: str) -> bpy.types.Collection:
     """
     Create or reuse a single receiver collection for light linking.
@@ -205,6 +221,7 @@ def ensure_shared_receiver_collection(rcv_name: str) -> bpy.types.Collection:
     # Create or reuse receiver
     rcv = bpy.data.collections.get(rcv_name) or bpy.data.collections.new(rcv_name)
     return rcv
+
 
 def assign_receiver_collection_to_light(light: bpy.types.Object, rcv: bpy.types.Collection) -> bool:
     """
@@ -218,6 +235,7 @@ def assign_receiver_collection_to_light(light: bpy.types.Object, rcv: bpy.types.
     except Exception:
         return False
 
+
 def add_active_collection_to_receiver(rcv: bpy.types.Collection, active_coll: bpy.types.Collection) -> bool:
     """
     Add the active collection as a child of the shared receiver collection (no flags, just like the UI).
@@ -226,6 +244,29 @@ def add_active_collection_to_receiver(rcv: bpy.types.Collection, active_coll: bp
         rcv.children.link(active_coll)
         return True
     return False
+
+
+def delete_collection(coll: bpy.types.Collection):
+    """Unlink and delete the given collection."""
+    # Unlink from all parents
+
+    if coll:
+        # First unlink it from all scenes and parent collections
+        for scene in bpy.data.scenes:
+            if coll.name in scene.collection.children:
+                scene.collection.children.unlink(coll)
+        for parent in bpy.data.collections:
+            if coll.name in parent.children:
+                parent.children.unlink(coll)
+        for obj in list(coll.objects):
+            bpy.data.objects.remove(obj, do_unlink=True)
+
+        # Finally, remove it from bpy.data entirely
+        bpy.data.collections.remove(coll)
+        print(f"Deleted collection: {coll.name}")
+    else:
+        print(f"Collection '{coll.name}' not found.")
+
 
 # ------------------------------------------------------------------------
 # Lighting Setup - Append Blend File
@@ -326,15 +367,17 @@ class LIGHTINGSETUP_OT_AppendBlend(bpy.types.Operator):
                 if light_root and rig:
                     if ensure_child_of_to_c_traj(light_root, rig, self.report):
                         self.report({'INFO'},
-                                    f"Added Child Of (target: {rig.name}, bone: c_traj) to '{light_root.name}'.")
+                                    f"Added Child Of (target: {rig.name}, bone: c_traj or body) to '{light_root.name}'.")
                     else:
                         self.report({'WARNING'}, f"Could not complete Child Of setup for '{light_root.name}'.")
+                        delete_collection(coll)
                 else:
                     if not light_root:
                         self.report({'WARNING'},
                                     f"No root light found in '{coll.name}'. Expected 'light_root_{suffix}'.")
                     if not rig:
                         self.report({'WARNING'}, f"No rig detected under active collection '{sel_name}'.")
+                    delete_collection(coll)
 
                 ## Set up light linking for fill and rim lights
                 fill_light = find_named_light(coll, "l-fill", suffix)
@@ -346,9 +389,6 @@ class LIGHTINGSETUP_OT_AppendBlend(bpy.types.Operator):
                     self.report({'WARNING'}, "Light Linking API not available; skipped receiver collection setup.")
                 else:
                     # Assign both lights to the SAME receiver collection
-                    ok_fill = False
-                    ok_rim = False
-
                     if fill_light:
                         ok_fill = assign_receiver_collection_to_light(fill_light, shared_rcv)
                         if ok_fill:
