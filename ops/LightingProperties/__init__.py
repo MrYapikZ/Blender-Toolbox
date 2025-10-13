@@ -1,9 +1,16 @@
-from . import library_override
+from . import library_override, export_import_preset
+
+modules = [
+    library_override,
+    export_import_preset,
+]
 
 
 def register():
-    library_override.register()
+    for item in modules:
+        item.register()
 
 
 def unregister():
-    library_override.unregister()
+    for item in modules:
+        item.unregister()

@@ -65,6 +65,12 @@ class LightingPropertiesUI:
         # row_func.operator("blp.make_override_lights_local", text="Override Light", icon="LIBRARY_DATA_OVERRIDE")
         # make func to detect bpy.data.scenes["Scene"].node_tree.nodes["Occlusion_Thickness"] exists or not
 
+        ## Export Import Preset
+        box_preset = layout.box()
+        row_preset = box_preset.row(align=True)
+        row_preset.operator("blp.export_lighting_preset", text="Export Preset", icon="EXPORT")
+        row_preset.operator("blp.import_lighting_preset", text="Import Preset", icon="IMPORT")
+
         ## Ambient Occlusion
         box_ao = layout.box()
         col_ao = box_ao.column(align=True)
