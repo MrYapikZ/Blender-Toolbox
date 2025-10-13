@@ -151,7 +151,7 @@ def find_light_root_candidate(coll: bpy.types.Collection, suffix: str):
     return None
 
 
-def ensure_child_of_to_c_traj(root_obj: bpy.types.Object, rig: bpy.types.Object, reporter=None) -> bool:
+def ensure_child_of_to_c_traj(root_obj: bpy.types.Object, rig: bpy.types.Object, is_napo: bool = False, reporter=None) -> bool:
     """
     Adds Child Of to root_obj targeting rig's 'c_traj' bone and clear inverse to keep current world transform.
     Returns True on success.
@@ -163,7 +163,10 @@ def ensure_child_of_to_c_traj(root_obj: bpy.types.Object, rig: bpy.types.Object,
     # Find the bone to target: prefer 'c_traj', fallback to 'body'
     pb = None
     if rig.pose:
-        pb = rig.pose.bones.get("c_traj") or rig.pose.bones.get("body")
+        if not is_napo:
+            pb = rig.pose.bones.get("c_traj") or rig.pose.bones.get("body")
+        else:
+            pb = rig.pose.bones.get("c_body")
 
     if pb is None:
         bpy.ops.bls.set_child_of_bone_popup('INVOKE_DEFAULT', rig_obj=rig)
@@ -365,7 +368,8 @@ class LIGHTINGSETUP_OT_AppendBlend(bpy.types.Operator):
                 rig.data.pose_position = 'REST'
                 light_root = find_light_root_candidate(coll, suffix)
                 if light_root and rig:
-                    if ensure_child_of_to_c_traj(light_root, rig, self.report):
+                    ### SPECIAL CASE NAPO
+                    if ensure_child_of_to_c_traj(root_obj=light_root,rig=rig,is_napo=(sel_name == "c-napo"),reporter=self.report):
                         self.report({'INFO'},
                                     f"Added Child Of (target: {rig.name}, bone: c_traj or body) to '{light_root.name}'.")
                     else:
@@ -378,6 +382,7 @@ class LIGHTINGSETUP_OT_AppendBlend(bpy.types.Operator):
                     if not rig:
                         self.report({'WARNING'}, f"No rig detected under active collection '{sel_name}'.")
                     delete_collection(coll)
+
 
                 ## Set up light linking for fill and rim lights
                 fill_light = find_named_light(coll, "l-fill", suffix)
