@@ -1,8 +1,9 @@
-from . import library_override, export_import_preset
+from . import library_override, export_import_preset, override_fog_materials
 
 modules = [
     library_override,
     export_import_preset,
+    override_fog_materials
 ]
 
 
