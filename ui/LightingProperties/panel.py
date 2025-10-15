@@ -26,6 +26,25 @@ def find_custom_node(scene: bpy.types.Scene, node_name):
     return tree.nodes.get(node_name)
 
 
+def get_material_node_tree(mat: bpy.types.Material):
+    """Return the material's node tree, or None safely."""
+    if not mat:
+        return None
+    # In all modern Blender versions, materials can have node trees when use_nodes is True
+    if not getattr(mat, "use_nodes", False):
+        return None
+    tree = getattr(mat, "node_tree", None)
+    return tree if tree and isinstance(tree, bpy.types.NodeTree) else None
+
+
+def find_material_node(mat: bpy.types.Material, node_name: str):
+    """Return the node with the given name from the material's node tree, or None safely."""
+    tree = get_material_node_tree(mat)
+    if not tree:
+        return None
+    return tree.nodes.get(node_name)
+
+
 def get_thickness_socket(node: bpy.types.Node):
     """
     Return Occlusion_Thickness.inputs[0] exactly, or None if missing.
@@ -70,6 +89,8 @@ class LightingPropertiesUI:
         row_preset = box_preset.row(align=True)
         row_preset.operator("blp.export_lighting_preset", text="Export Preset", icon="EXPORT")
         row_preset.operator("blp.import_lighting_preset", text="Import Preset", icon="IMPORT")
+        col_override = box_preset.column(align=True)
+        col_override.operator("blp.override_fog_materials", text="Override Fog Materials", icon="MATERIAL")
 
         ## Ambient Occlusion
         box_ao = layout.box()
@@ -134,7 +155,8 @@ class LightingPropertiesUI:
             col_defocus_zscale.prop(defocus_zscale_node, "z_scale", text="Z-Scale")
 
         # Underwater Fog
-        uf_color = find_custom_node(s, "Underwater_Fog_Color")
+        fog_mat = bpy.data.materials.get("Fog")
+        uf_color = find_material_node(fog_mat, "Underwater_Fog_Color")
         if not uf_color:
             occ_box.label(text="Compositor node 'Underwater_Fog_Color' not found.", icon='ERROR')
         else:
