@@ -80,57 +80,72 @@ class LightingPropertiesUI:
         row_ao.prop(eevee, "gtao_distance", text="AO Distance")
 
         col_ao_thic = box_ao.column(align=True)
-        col_ao_thic.label(text="AO Thickness Ramp:")
 
         ao_thic_node = find_custom_node(s, "Occlusion_Thickness")
         if not ao_thic_node:
             occ_box.label(text="Compositor node 'Occlusion_Thickness' not found.", icon='ERROR')
         else:
+            col_ao_thic.label(text="AO Thickness Ramp:")
             box_ao.template_color_ramp(ao_thic_node, "color_ramp", expand=True)
 
         # Mist
-        box_mist = layout.box()
-        col_mist_controller = box_mist.column(align=True)
-        col_mist_controller.label(text="Mist Controller Ramp:")
-
         mist_controller_node = find_custom_node(s, "Mist_Controller")
         if not mist_controller_node:
             occ_box.label(text="Compositor node 'Mist_Controller' not found.", icon='ERROR')
         else:
+            box_mist = layout.box()
+            col_mist_controller = box_mist.column(align=True)
+
+            col_mist_controller.label(text="Mist Controller Ramp:")
             box_mist.template_color_ramp(mist_controller_node, "color_ramp", expand=True)
 
-        # Depth of Field
         box_dof = layout.box()
-        col_dof_range = box_dof.column(align=True)
-        col_dof_range.label(text="DOF Range:")
-        row_dof_range_1 = box_dof.row(align=True)
-        row_dof_range_2 = box_dof.row(align=True)
-
+        # Depth of Field
         dof_range_node = find_custom_node(s, "Dof_Range")
         if not dof_range_node:
             occ_box.label(text="Compositor node 'Dof_Range' not found.", icon='ERROR')
         else:
+            col_dof_range = box_dof.column(align=True)
+            row_dof_range_1 = box_dof.row(align=True)
+            row_dof_range_2 = box_dof.row(align=True)
+
+            col_dof_range.label(text="DOF Range:")
             row_dof_range_1.prop(dof_range_node.inputs[1], "default_value", text="From Min")
             row_dof_range_1.prop(dof_range_node.inputs[2], "default_value", text="From Max")
             row_dof_range_2.prop(dof_range_node.inputs[3], "default_value", text="To Min")
             row_dof_range_2.prop(dof_range_node.inputs[4], "default_value", text="To Max")
 
         col_dof_intensity = box_dof.column(align=True)
-        col_dof_intensity.label(text="DOF Intensity Ramp:")
 
         dof_intensity_node = find_custom_node(s, "Dof_Intensity")
         if not dof_intensity_node:
             occ_box.label(text="Compositor node 'Dof_Intensity' not found.", icon='ERROR')
         else:
+            col_dof_intensity.label(text="DOF Intensity Ramp:")
             box_dof.template_color_ramp(dof_intensity_node, "color_ramp", expand=True)
 
         col_defocus_zscale = box_dof.column(align=True)
-        col_defocus_zscale.label(text="Defocus Z-Scale:")
+
         defocus_zscale_node = find_custom_node(s, "Defocus")
         if not defocus_zscale_node:
             occ_box.label(text="Compositor node 'Defocus' not found.", icon='ERROR')
         else:
+            col_defocus_zscale.label(text="Defocus Z-Scale:")
             col_defocus_zscale.prop(defocus_zscale_node, "z_scale", text="Z-Scale")
+
+        # Underwater Fog
+        uf_color = find_custom_node(s, "Underwater_Fog_Color")
+        if not uf_color:
+            occ_box.label(text="Compositor node 'Underwater_Fog_Color' not found.", icon='ERROR')
+        else:
+            box_water_fog = layout.box()
+            col_water_fog = box_water_fog.column(align=True)
+
+            col_water_fog.label(text="Underwater Fog Range:")
+            col_water_fog.prop(eevee, "volumetric_start", text="Fog Range Start")
+
+            col_water_fog.label(text="Underwater Fog Color Ramp:")
+            box_water_fog.template_color_ramp(uf_color, "color_ramp", expand=True)
 
         # Light Properties
         key = props.key
