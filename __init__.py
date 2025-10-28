@@ -2,7 +2,7 @@ bl_info = {
     "name": "MXTools",
     "description": "Tools for Blender",
     "author": "MrYapikZ",
-    "version": (0, 1, 9),
+    "version": (0, 1, 10),
     "blender": (4, 5, 0),
 }
 
