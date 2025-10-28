@@ -7,7 +7,7 @@ bl_info = {
 }
 
 import bpy, os
-from . import ui, pref, ops
+from . import ui, pref, ops, addon
 
 ADDON_ID = __name__
 ADDON_DIR = os.path.dirname(__file__)
@@ -20,6 +20,7 @@ ADDON_DIR = os.path.dirname(__file__)
 modules = [
     pref,
     ops,
+    addon,
     ui,
 ]
 
