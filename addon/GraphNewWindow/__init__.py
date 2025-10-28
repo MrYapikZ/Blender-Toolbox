@@ -1,9 +1,9 @@
-from . import LightingProperties, LightingSetup, GraphNewWindow
+from . import panel
+
+GraphNewWindowPrefUI = panel.GraphNewWindowPrefUI
 
 modules = [
-    LightingProperties,
-    LightingSetup,
-    GraphNewWindow
+    panel
 ]
 
 

@@ -17,7 +17,7 @@ class Toolbox(bpy.types.PropertyGroup):
     )
     version: bpy.props.StringProperty(
         name="Version",
-        default="0.1.9",
+        default="0.1.10",
         options={'HIDDEN'}
     )
 

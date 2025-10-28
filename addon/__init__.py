@@ -1,9 +1,8 @@
-from . import LightingProperties, LightingSetup, GraphNewWindow
+from . import pref, GraphNewWindow
 
 modules = [
-    LightingProperties,
-    LightingSetup,
-    GraphNewWindow
+    GraphNewWindow,
+    pref,
 ]
 
 
