@@ -22,7 +22,7 @@ def register():
     kc = bpy.context.window_manager.keyconfigs.addon
     km = kc.keymaps.new(name='Window', space_type='EMPTY', region_type='WINDOW')
     kmi = km.keymap_items.new('gnw.graph_new_window', 'F6', 'PRESS', ctrl=False)
-    kmi.active = True
+    kmi.active = False
     addon_keymaps.append((km, kmi))
 
 def unregister():
