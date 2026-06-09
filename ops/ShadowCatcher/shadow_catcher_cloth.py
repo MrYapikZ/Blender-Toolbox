@@ -28,7 +28,7 @@ def get_blend_parts():
 # Get base path
 def get_output_base_path(ep):
     scenes = bpy.data.scenes["Scene"]
-    path_char = scenes.node_tree.nodes["File Output Char"]
+    path_char = scenes.node_tree.nodes["File Output Char"].base_path
     if ep in path_char:
         base_path = path_char.split(ep)[0]
         return base_path.rstrip("\\/")
