@@ -21,6 +21,7 @@ class Toolbox(bpy.types.PropertyGroup):
                 "Import movie or image sequence as plane with correct settings",
             ),
             ("PROXYFY", "Proxyfy", "I don't know"),
+            ("SHADOWCATCHER", "ShadowCatcher", "Add gobos to object")
         ],
         default="INFO",
     )
@@ -30,7 +31,7 @@ class Toolbox(bpy.types.PropertyGroup):
         default=False,
     )
     version: bpy.props.StringProperty(
-        name="Version", default="0.2.8", options={"HIDDEN"}
+        name="Version", default="0.2.9", options={"HIDDEN"}
     )
 
 
