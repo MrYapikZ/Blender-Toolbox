@@ -2,7 +2,7 @@ bl_info = {
     "name": "DelthλTools",
     "description": "Tools for Blender",
     "author": "Yapi",
-    "version": (0, 2, 8),
+    "version": (0, 2, 9),
     "blender": (4, 5, 0),
 }
 
