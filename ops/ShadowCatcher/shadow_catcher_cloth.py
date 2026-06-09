@@ -8,9 +8,9 @@ import os
 
 # Create GOBOS Scene
 def get_or_create_gobos():
-    gobos = bpy.data.scenes.get("GOBOS")
+    gobos = bpy.data.scenes.get("gobos")
     if gobos is None:
-        gobos = bpy.data.scenes.new("GOBOS")
+        gobos = bpy.data.scenes.new("gobos")
     return gobos
 
 # Filename parser
@@ -25,13 +25,23 @@ def get_blend_parts():
     sh = next((p for p in parts if p.startswith('sh')), 'sh0000')
     return {"blend_name": blend_name, "ep": ep, "sq": sq, "sh": sh}
 
+# Get base path
+def get_output_base_path(ep):
+    scenes = bpy.data.scenes["Scene"]
+    path_char = scenes.node_tree.nodes["File Output Char"]
+    if ep in path_char:
+        base_path = path_char.split(ep)[0]
+        return base_path.rstrip("\\/")
+    
+    return path_char
 
 # Cloth cahce
 def get_cloth_cache_path(obj):
     """Buat absolute cache path untuk cloth/softbody object."""
     info = get_blend_parts()
     ep, sq, sh = info['ep'], info['sq'], info['sh']
-    return f"/mnt/N/{ep}/{ep}_{sq}/{ep}_{sq}_{sh}/cache/cloth/{obj.name}/"
+    base_path = get_output_base_path(ep)
+    return f"{base_path}/{ep}/{ep}_{sq}/{ep}_{sq}_{sh}/cache/cloth/{obj.name}/"
 
 
 # Softbody modifier cheker
@@ -295,7 +305,8 @@ class SHADOWCATCHER_OT_add(bpy.types.Operator):
         info = get_blend_parts()
         blend_name = info['blend_name']
         ep, sq, sh = info['ep'], info['sq'], info['sh']
-        out_path = f"/mnt/N/{ep}/{ep}_{sq}/{ep}_{sq}_{sh}/exr/gobos/"
+        base_path = get_output_base_path(ep)
+        out_path = f"{base_path}/{ep}/{ep}_{sq}/{ep}_{sq}_{sh}/render/gobos/"
         file_slot_name = f"{blend_name}_gobos_####.png"
 
         scene.use_nodes = True
@@ -309,8 +320,8 @@ class SHADOWCATCHER_OT_add(bpy.types.Operator):
         rl_node.location = (-200, 300)
 
         file_out = node_tree.nodes.new(type='CompositorNodeOutputFile')
-        file_out.name = "File Output"
-        file_out.label = "File Output"
+        file_out.name = "File Output Gobos"
+        file_out.label = "File Output Gobos"
         file_out.location = (200, 300)
         file_out.base_path = out_path
         file_out.format.file_format = 'PNG'
