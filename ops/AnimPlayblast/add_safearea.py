@@ -1,6 +1,8 @@
 import bpy
 from pathlib import Path
 
+from utils.file_manager import FileManager
+
 
 # ------------------------------------------------------------------------
 # Add Safe Area - Operator
@@ -25,7 +27,8 @@ class APB_OT_AddSafeArea(bpy.types.Operator):
 
             bg = cam.data.background_images[0]
 
-            img_path = context.scene.exconfig.safe_area_path
+            raw_path = context.scene.exconfig.safe_area_path
+            img_path = FileManager.get_filepath(raw_path)
             img_name = Path(img_path).name
             if not bpy.data.images.get(img_name):
                 bg.image = bpy.data.images.load(img_path)
