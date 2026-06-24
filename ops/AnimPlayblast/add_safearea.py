@@ -1,7 +1,7 @@
 import bpy
 from pathlib import Path
 
-from utils.file_manager import FileManager
+from ...utils.file_manager import FileManager
 
 
 # ------------------------------------------------------------------------
