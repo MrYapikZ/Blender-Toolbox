@@ -26,9 +26,9 @@ class ExConfigDriveUI(bpy.types.Panel):
         col.prop(s.exconfig, "project_drive_output", text="Output")
 
 
-def register():
-    bpy.utils.register_class(ExConfigDriveUI)
+# def register():
+#     bpy.utils.register_class(ExConfigDriveUI)
 
 
-def unregister():
-    bpy.utils.unregister_class(ExConfigDriveUI)
+# def unregister():
+#     bpy.utils.unregister_class(ExConfigDriveUI)

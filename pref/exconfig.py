@@ -237,11 +237,11 @@ class ExConfigProperties(bpy.types.PropertyGroup):
         items=[
             ('NONE', "None", "Settings None"),
             ('ANIM', "Animation", "Settings Animation"),
-            ('COMP', "Compositing", "Settings Compositing"),
+            # ('COMP', "Compositing", "Settings Compositing"),
             ('PLAYBLAST', "Playblast", "Settings Playblast"),
-            ('LIGHTING', "Lighting", "Settings Lighting"),
-            ('RENDER', "Render", "Settings Render"),
-            ('COMP_OUTPUT', "CompOutput", "Settings Comp-Output"),
+            # ('LIGHTING', "Lighting", "Settings Lighting"),
+            # ('RENDER', "Render", "Settings Render"),
+            # ('COMP_OUTPUT', "CompOutput", "Settings Comp-Output"),
         ],
         default='NONE',
         update=on_pattern_division_update,
@@ -294,6 +294,13 @@ class ExConfigProperties(bpy.types.PropertyGroup):
         name="Playblast Config",
         description="Path to playblast preset JSON file",
         default="",
+        subtype='FILE_PATH',
+    )
+    
+    safe_area_path: bpy.props.StringProperty(
+        name="Safe Area Path",
+        description="Path to safe area image file",
+        default="presets/image/action-safe_nowm.png",
         subtype='FILE_PATH',
     )
     

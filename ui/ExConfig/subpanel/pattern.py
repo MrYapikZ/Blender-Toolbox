@@ -23,8 +23,8 @@ class ExConfigPatternUI(bpy.types.Panel):
         col = box.column(align=True)
         col.label(text="Pattern DelthλConfig.", icon='PREFERENCES')
         col.prop(s.exconfig, "project_pattern_division", text="Division")
-        col.prop(s.exconfig, "project_pattern_base", text="Base")
-        col.prop(s.exconfig, "project_pattern_example", text="Example")
+        col.prop(s.exconfig, "project_pattern_base", placeholder="e.g. /mnt/X/date_project_name/pipeline/division/", text="Base")
+        col.prop(s.exconfig, "project_pattern_example", placeholder="e.g. /mnt/X/date_project_name/pipeline/division/epXXX/epXXX_sqXX/epXXX_sqXX_shXXXX/progress/mdt_epXXX_sqXX_shXXXX_divisioncode_vXXXX.extension", text="Example")
 
 
 def register():
