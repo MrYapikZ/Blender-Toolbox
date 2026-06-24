@@ -1,4 +1,5 @@
 import bpy
+from pathlib import Path
 
 
 # ------------------------------------------------------------------------
@@ -24,11 +25,12 @@ class APB_OT_AddSafeArea(bpy.types.Operator):
 
             bg = cam.data.background_images[0]
 
-            img_path = "/mnt/J/00_tools/cam_guide/action-safe_nowm.png"
-            if not bpy.data.images.get("action-safe_nowm.png"):
+            img_path = context.scene.exconfig.safe_area_path
+            img_name = Path(img_path).name
+            if not bpy.data.images.get(img_name):
                 bg.image = bpy.data.images.load(img_path)
             else:
-                bg.image = bpy.data.images["action-safe_nowm.png"]
+                bg.image = bpy.data.images[img_name]
 
             cs = bg.image.colorspace_settings
             color_spaces = {e.identifier for e in cs.bl_rna.properties['name'].enum_items}

@@ -300,7 +300,7 @@ class ExConfigProperties(bpy.types.PropertyGroup):
     safe_area_path: bpy.props.StringProperty(
         name="Safe Area Path",
         description="Path to safe area image file",
-        default="",
+        default="presets/image/action-safe_nowm.png",
         subtype='FILE_PATH',
     )
     
