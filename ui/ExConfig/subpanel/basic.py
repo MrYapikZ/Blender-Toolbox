@@ -22,8 +22,8 @@ class ExConfigBasicUI(bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
         col.label(text="Basic DelthλConfig.", icon='PREFERENCES')
-        col.prop(s.exconfig, "project_name", text="Name")
-        col.prop(s.exconfig, "project_code", text="Code")
+        col.prop(s.exconfig, "project_name", placeholder="e.g. MyProject", text="Name")
+        col.prop(s.exconfig, "project_code", placeholder="e.g. PRJ", text="Code")
 
 
 def register():

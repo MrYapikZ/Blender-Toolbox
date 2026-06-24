@@ -297,6 +297,13 @@ class ExConfigProperties(bpy.types.PropertyGroup):
         subtype='FILE_PATH',
     )
     
+    safe_area_path: bpy.props.StringProperty(
+        name="Safe Area Path",
+        description="Path to safe area image file",
+        default="",
+        subtype='FILE_PATH',
+    )
+    
     def get_pattern_dict(self):
         """Get pattern data as dictionary"""
         try:

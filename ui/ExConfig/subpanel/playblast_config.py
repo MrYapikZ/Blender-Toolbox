@@ -23,6 +23,7 @@ class ExConfigPlayblastConfigUI(bpy.types.Panel):
         col = box.column(align=True)
         col.label(text="Playblast Preset Config", icon='FILE_MOVIE')
         col.prop(s.exconfig, "playblast_config", text="Config Path")
+        col.prop(s.exconfig, "safe_area_path", text="Safe Area Path")
         
         # Show warning if path is empty or invalid
         if not s.exconfig.playblast_config:
