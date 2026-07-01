@@ -39,6 +39,7 @@ class APB_OT_Render(bpy.types.Operator):
         bpy.context.scene.frame_end = original_end
         bpy.ops.apb.clear_render_markers()
         bpy.ops.apb.return_solid()
+        bpy.ops.apb.view_camera_operator_default()
 
         self.report({'INFO'}, "Rendering completed.")
         return {'FINISHED'}
