@@ -1,9 +1,58 @@
 import bpy
 
 
+OVERLAY_PRESET: dict = {
+    # --- Guides ---
+    "show_grid":               True,
+    "show_floor":              False,
+    "show_axis_x":             False,
+    "show_axis_y":             False,
+    "show_axis_z":             False,
+    "grid_scale":              1.0,
+    "grid_subdivisions":       10,
+    "show_text_info":          False,
+    "show_cursor":             False,
+    "show_stats":              False,
+    "show_annotation":         False,
+    "show_camera_guides":      False,
+
+    # --- Objects ---
+    "show_extras":             False,
+    "show_bones":              False,
+    "show_motion_paths":       False,
+    "show_relationship_lines": False,
+    "show_object_origins":     False,
+    "show_outline_selected":   False,
+    "show_object_origins_all": False,
+
+    # --- Geometry ---
+    "show_wireframes":         False,
+    "wireframe_opacity":       1.0,
+    "show_face_orientation":   False,
+
+    # --- Viewer Node ---
+    "viewer_node_border_opacity": 1.0,
+
+    # --- Motion Tracking ---
+    "show_motion_tracking":    False,
+}
+# ------------------------------------------------------------------------
+# Helper
+# ------------------------------------------------------------------------
+
+def apply_overlay(overlay, preset):
+    for key, value in preset.items():
+        if hasattr(overlay, key) and value is not None:
+            try:
+                setattr(overlay, key, value)
+            except (AttributeError, TypeError) as e:
+                print(f"[BJL] Gagal set '{key}': {e}")
+
+
 # ------------------------------------------------------------------------
 # Control Camera - Operator
 # ------------------------------------------------------------------------
+
 class APB_OT_ViewCamera(bpy.types.Operator):
     """Switch to camera view"""
     bl_idname = "apb.view_camera_operator"
@@ -16,7 +65,8 @@ class APB_OT_ViewCamera(bpy.types.Operator):
                     if space.type == 'VIEW_3D':
                         region_3d = space.region_3d
                         overlay = space.overlay
-                        overlay.show_overlays = False
+                        overlay.show_overlays = True
+                        apply_overlay(overlay, OVERLAY_PRESET)
                         region_3d.view_perspective = 'CAMERA'
                         self.report({'INFO'}, "Switched to Camera View")
         return {'FINISHED'}
