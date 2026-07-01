@@ -17,18 +17,7 @@ class EXLAUNCHER_OT_SaveProgress(bpy.types.Operator):
             self.report({'ERROR'}, "Please save the Blender file before saving progress.")
             return {'CANCELLED'}
 
-        project_path = Path(bpy.data.filepath)
-        project_dir = project_path.parent
-
-        latest_file = FileManager.get_latest_versioned_file(project_dir)
-
-        if not latest_file:
-            self.report({'ERROR'}, "No versioned .blend files found.")
-            return {'CANCELLED'}
-
-        next_path = FileManager.next_version_name(latest_file)
-
-        bpy.ops.wm.save_as_mainfile(filepath=str(next_path))
+        bpy.ops.wm.save_mainfile(copy=False, increment=True)
 
         self.report({'INFO'}, f"Progress saved for project '{next_path}'")
         return {'FINISHED'}
