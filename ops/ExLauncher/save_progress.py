@@ -17,7 +17,7 @@ class EXLAUNCHER_OT_SaveProgress(bpy.types.Operator):
             self.report({'ERROR'}, "Please save the Blender file before saving progress.")
             return {'CANCELLED'}
 
-        bpy.ops.wm.save_mainfile(copy=False, increment=True)
+        bpy.ops.wm.save_mainfile(increment=True)
 
         self.report({'INFO'}, f"Progress saved for project '{next_path}'")
         return {'FINISHED'}

@@ -31,7 +31,7 @@ class EXLAUNCHER_OT_SaveMaster(bpy.types.Operator):
 
         next_path = FileManager.next_version_name(latest_file)
 
-        bpy.ops.wm.save_mainfile(copy=False, increment=True)
+        bpy.ops.wm.save_mainfile(increment=True)
 
         if exlauncer.version_type == 'LAST_NUMBER':
             master_file = FileManager.remove_trailing_number_from_last_underscore(str(next_path))
