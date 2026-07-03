@@ -19,7 +19,7 @@ class EXLAUNCHER_OT_SaveProgress(bpy.types.Operator):
 
         bpy.ops.wm.save_mainfile(incremental=True)
 
-        self.report({'INFO'}, f"Progress saved for project '{next_path}'")
+        self.report({'INFO'}, f"Progress saved for project")
         return {'FINISHED'}
 
 
