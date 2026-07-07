@@ -45,8 +45,11 @@ class APB_OT_AddSafeArea(bpy.types.Operator):
             else:
                 cs.name = 'sRGB'
             bg.display_depth = 'FRONT'
-            bg.scale = 1.12
+            bg.scale = 1.0
             bg.alpha = 1.0
+
+            img = bpy.data.images[img_name]
+            img.pack()
 
             self.report({'INFO'}, f"Safe area added to camera '{cam.name}'")
         else:
