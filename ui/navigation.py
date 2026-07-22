@@ -9,6 +9,7 @@ from .AssetColRename import AssetColRenameUI
 from .ImportVfxPlane import ImportVfxPlaneUI
 from .Proxyfy import ProxyfyUI
 from .ShadowCatcher import ShadowCatcherUI
+from .AnimMisc import AnimMiscUI
 
 
 # ------------------------------------------------------------------------
@@ -54,6 +55,8 @@ class NAV_PT_Panel(bpy.types.Panel):
             ProxyfyUI(self.layout, context).draw()
         elif s.toolbox.ui_mode == 'SHADOWCATCHER':
             ShadowCatcherUI(self.layout, context).draw()
+        elif s.toolbox.ui_mode == 'ANM_MISC':
+            AnimMiscUI(self.layout, context).draw()
 
 
 class NAV_PT_PanelCompositing(bpy.types.Panel):
