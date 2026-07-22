@@ -10,4 +10,4 @@ class AnimMiscUI:
         s = self.context.scene
 
         column = layout.column(align=True)
-        column.operator("anmmsc.create_bb_guide", text="Add Sphere", icon='SPHERE')
+        column.operator("anmmsc.create_bb_guide", text="BB Guide", icon='SPHERE')
