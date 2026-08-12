@@ -2,8 +2,8 @@
 
 **Blender addon** berisi kumpulan tool produksi untuk Asset, Animator, dan Lighting/Compositing/Render.
 
-- **Versi:** 0.2.3
-- **Blender:** 4.5.0+
+- **Versi:** 0.3.0
+- **Blender:** 5.2.0
 - **Author:** Yapi
 
 ---
