@@ -777,7 +777,6 @@ class LIGHTINGSETUP_OT_AppendBlend(bpy.types.Operator):
             current_scene = bpy.context.scene
             # Render Engine
             current_scene.render.engine = "CYCLES"
-            current_scene.cycles.feature_set = "SUPPORTED"
             current_scene.cycles.device = "GPU"
 
             # Sampling Viewport
